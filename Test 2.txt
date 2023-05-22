@@ -1,0 +1,262 @@
+
+
+Name + Surname___________________________________________________________________________________/
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Scanner;
+import javax.swing.JOptionPane;
+
+//Test git hub
+///Where can we find a
+public class SS_Test_1_Q1 {
+
+    public static void main(String[] args) {
+        
+        int count = 0;
+        int number = 0;
+
+        ArrayList arrList = new ArrayList<Integer>();                     (1)
+        Scanner input = new Scanner(System.in);
+
+        do {
+            number = Integer.parseInt(JOptionPane.showInputDialog("Enter a number or 0 to stop"));        (1)
+            arrList.add(count, number);                     (1)
+            count++;                     (1)
+
+        } while (number != 0);                     (1)
+
+        int array[] = new int[count];                     (1)
+
+        int lowest = 10000;                     (1)
+        for (int i = 0; i < count; i++) {                     (1)
+            array[i] = (Integer) arrList.get(i);                     (1)
+        }
+        
+        Arrays.sort(array);                     (1)
+        
+        for(int i : array){
+            System.out.print(i + " ");                     (1)
+        }
+        
+    }
+
+}
+
+
+Question 2
+
+package test1_question2;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Date;
+
+public class Test1_Question2_Server {
+
+    private static int count = 1;                     (1)
+
+    public static void main(String[] args) {
+
+        try {
+            ServerSocket svrSocket = new ServerSocket(4500);                     (1)
+            System.out.println("Server started @ " + new Date());                     (1)
+            while (true) {
+                Socket socket = svrSocket.accept();                     (1)
+                InetAddress id = socket.getInetAddress();                     (1)
+                System.out.println("Connected to client # " + count + "IP Address : " + id.getHostAddress());
+                ClientWork cw = new ClientWork(socket);
+                cw.start();
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+    }
+
+}
+
+class ClientWork extends Thread {
+
+    private Socket socket;
+    private DataInputStream input;
+    private DataOutputStream output;
+
+    public ClientWork(Socket socket) {
+        this.socket = socket;                     (1)
+    }
+
+    @Override
+    public void run() {
+        try {
+            input = new DataInputStream(socket.getInputStream());
+            output = new DataOutputStream((socket.getOutputStream()));                     (1)
+
+            int option = input.readInt();                     (1)
+
+            switch (option) {                     (1)
+                case 1:
+                    double amt = input.readDouble();
+                    double rate = input.readDouble();                     (1)
+                    int months = input.readInt();
+                    double roi = calcROI(amt, rate, months);                     (1)
+                    System.out.println("Infor Received : \n amount : " + amt + "\n"
+                            + "rate : " + rate + "\n months : " + months);                     (1)
+                    System.out.println("\n The Return on Investment : " + roi);                     (1)
+
+                    output.writeDouble(roi);
+                    output.flush();                     (1)
+                    break;
+                case 2:
+                    char mType = input.readChar();
+                    int hours = input.readInt();                     (1)
+                    double amtB4VAT = calcCost(mType, hours);
+                    double vat = calcVAT(amtB4VAT);
+                    double amtAfterVAT = amtB4VAT + vat;                     (1)
+                    System.out.println("\n Infor Received : \n Machine Type : " + mType + "\n"
+                            + "Hours : " + hours);
+                    System.out.println("\n The Total Cost of machine hire : " + (amtAfterVAT));
+                    output.writeDouble(amtB4VAT);
+                    output.writeDouble(vat);                     (1)
+                    output.writeDouble(amtAfterVAT);
+                    output.flush();                     (1)
+                    break;
+
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    public double calcROI(double amt, double rate, int months) {                     (1)
+
+        double roi = 0;
+        for (int i = 0; i < months; i++) {
+            roi =  roi + amt + amt * (rate / 1200);                     (1)
+                    }
+
+        return roi;
+    }
+
+    public double calcCost(char type, int hours) {
+        double totalAmount = 0;
+
+        int addHours = hours - 1;
+
+        if (type == 'H' && addHours >= 0) {
+            totalAmount = 50 + (30 * addHours);                     (1)
+        }
+        if (type == 'L' && addHours >= 0) {
+            totalAmount = 62.5 + (35.25 * addHours);                     (1)
+        }
+        if (type == 'o' && addHours >= 0) {
+            totalAmount = 74.87 + (40.50 * addHours);                     (1)
+        }
+
+        return totalAmount;
+    }
+
+    public double calcVAT(double amt) {
+        double vat = amt * 0.15;                     (1)
+        return vat;
+    }
+}------------------------------------------------------------------------------------------------------/19
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package test1_question2_client;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.Socket;
+import java.util.Scanner;
+
+/**
+ *
+ * @author uwilljo
+ */
+public class Test1_Question2_Client {
+
+    /**
+     * @param args the command line arguments
+     */
+    private static Socket socket;
+    private static DataInputStream in;
+    private static DataOutputStream out;
+    
+    public static void main(String[] args) {
+        try {
+            
+            socket = new Socket("localhost",4500);                     (1)
+            System.out.println("Connected to Server !!!");
+            enterDetails();                     (1)
+
+        }catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    public static void enterDetails() {
+        Scanner input = new Scanner(System.in);
+        System.out.println("Enter Option");                     (1)
+        int option = input.nextInt();
+
+        try {
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream((socket.getOutputStream()));                     (1)
+            
+            out.writeInt(option);
+            
+            switch (option) {
+                case 1: System.out.println("Enter an initial investment amount");
+                        double amt = input.nextDouble();
+                        System.out.println("Enter the rate ");                     (1)
+                        double rate = input.nextDouble();
+                        System.out.println("Enter the number of months");
+                        int months = input.nextInt();                     (1)
+                        
+                        out.writeDouble(amt);
+                        out.writeDouble(rate);
+                        out.writeInt(months);
+                        out.flush();                     (1)
+                        
+                        double roi = in.readDouble();
+                        System.out.println("The calculated ROI is " + roi);                     (1)
+                        break;
+                        
+                case 2: System.out.println("Enter type of Machinery (H - Heavy duty, L - Light Duty, O - Ordinary)");
+                        String type = input.next();
+                        char mType = type.charAt(0);                     (1)
+                        System.out.println("Enter hours hired ");
+                        int hours = input.nextInt();                     (1)
+                        
+                        out.writeChar(mType);
+                        out.writeInt(hours);
+                        out.flush();                     (1)
+                        
+                        double b4VAT = in.readDouble();
+                        double vat = in.readDouble();
+                        double afterVAT = in.readDouble();                     (1)
+                        
+                        System.out.println("Amount b4 VAT " + b4VAT + "\n VAT " + vat + "\n Amount after VAT " + 
+                                afterVAT);                     (1)
+                        
+                        break;
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+    }
+}-----------------------------------------------------------------------------------------------------------------/13
+
+
+
